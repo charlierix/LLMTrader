@@ -1,0 +1,25 @@
+﻿<Window x:Class="LLMTrader_WPF.InventoryTestWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:LLMTrader_WPF"
+        mc:Ignorable="d"
+        Title="Inventory Test Window" ResizeMode="CanResizeWithGrip" Width="800" Height="450">
+    <Grid Margin="8">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="auto"/>
+            <ColumnDefinition Width="8"/>
+            <ColumnDefinition Width="1*"/>
+        </Grid.ColumnDefinitions>
+        
+        <StackPanel Grid.Column="0">
+            <Button Content="Pick Loot" Click="PickLoot_Click"/>
+            <!--<Button Content="Generate Loot" Click="GenerateLoot_Click"/>-->
+        </StackPanel>
+
+        <!--<FlowDocumentScrollViewer-->
+
+        <TextBox Grid.Column="2" x:Name="txtResults" AcceptsReturn="True" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto"/>
+    </Grid>
+</Window>

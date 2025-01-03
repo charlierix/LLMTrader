@@ -19,6 +19,19 @@ namespace LLMTrader_WPF
         public MarketSessionTestWindow()
         {
             InitializeComponent();
+
+            Background = SystemColors.ControlBrush;
+        }
+
+        private void Generate_MarketSessionRoot_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+
+            }
+            catch (Exception ex)
+            {
+            }
         }
     }
 }

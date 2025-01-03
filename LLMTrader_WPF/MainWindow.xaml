@@ -15,8 +15,11 @@
 
         <WrapPanel Grid.Row="2" Orientation="Horizontal">
             <Label Content="Testers"/>
+            
+            <!-- TODO: settings window for pointing to ollama, comfyui, tts ... -->
+            
+            <Button Content="market session" Click="MarketSessionTester_Click"/>
             <Button Content="inventory" Click="InventoryTester_Click"/>
-            <Button Content="map session" Click="MapSessionTester_Click"/>
         </WrapPanel>
     </Grid>
 </Window>

@@ -20,22 +20,22 @@ namespace LLMTrader_WPF
             Background = SystemColors.ControlBrush;
         }
 
-        private void InventoryTester_Click(object sender, RoutedEventArgs e)
+        private void MarketSessionTester_Click(object sender, RoutedEventArgs e)
         {
             try
             {
-                new InventoryTestWindow().Show();
+                new MarketSessionTestWindow().Show();
             }
             catch (Exception ex)
             {
                 MessageBox.Show(ex.Message, Title, MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
-        private void MapSessionTester_Click(object sender, RoutedEventArgs e)
+        private void InventoryTester_Click(object sender, RoutedEventArgs e)
         {
             try
             {
-                new MarketSessionTestWindow().Show();
+                new InventoryTestWindow().Show();
             }
             catch (Exception ex)
             {

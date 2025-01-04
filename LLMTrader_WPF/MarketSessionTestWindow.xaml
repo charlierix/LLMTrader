@@ -65,6 +65,7 @@
 
             <StackPanel Grid.Column="2" VerticalAlignment="Bottom">
                 <Label Content="Generate..."/>
+                <Button Content="LLM Test" Click="LLMTest_Click"/>
                 <Button Content="Market Session root" Click="Generate_MarketSessionRoot_Click"/>
             </StackPanel>
         </Grid>

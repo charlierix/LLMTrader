@@ -16,9 +16,9 @@ using System.Windows.Shapes;
 
 namespace LLMTrader_WPF
 {
-    public partial class MarketSessionTestWindow : Window
+    public partial class MarketSessionTest1Window : Window
     {
-        public MarketSessionTestWindow()
+        public MarketSessionTest1Window()
         {
             InitializeComponent();
 

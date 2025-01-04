@@ -20,11 +20,11 @@ namespace LLMTrader_WPF
             Background = SystemColors.ControlBrush;
         }
 
-        private void MarketSessionTester_Click(object sender, RoutedEventArgs e)
+        private void MarketSessionTester1_Click(object sender, RoutedEventArgs e)
         {
             try
             {
-                new MarketSessionTestWindow().Show();
+                new MarketSessionTest1Window().Show();
             }
             catch (Exception ex)
             {

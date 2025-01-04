@@ -18,7 +18,7 @@
             
             <!-- TODO: settings window for pointing to ollama, comfyui, tts ... -->
             
-            <Button Content="market session" Click="MarketSessionTester_Click"/>
+            <Button Content="market session 1" Click="MarketSessionTester1_Click"/>
             <Button Content="inventory" Click="InventoryTester_Click"/>
         </WrapPanel>
     </Grid>

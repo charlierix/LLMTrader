@@ -4,7 +4,6 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:LLMTrader_WPF"
-        mc:Ignorable="d"
         Title="LLM Trader" ResizeMode="CanResizeWithGrip" Width="1000" Height="1000">
     <Grid>
         <Grid.RowDefinitions>
@@ -14,12 +13,26 @@
         </Grid.RowDefinitions>
 
         <WrapPanel Grid.Row="2" Orientation="Horizontal">
-            <Label Content="Testers"/>
+            <WrapPanel.Resources>
+                <Style TargetType="Button">
+                    <Setter Property="Margin" Value="2"/>
+                    <Setter Property="VerticalAlignment" Value="Center"/>
+                </Style>
+
+                <Style TargetType="Label">
+                    <Setter Property="VerticalAlignment" Value="Center"/>
+                </Style>
+            </WrapPanel.Resources>
+
+            <Button Content="settings" Click="Settings_Click"/>
+
+            <Label Content="Testers:" Margin="8,0,0,0"/>
             
             <!-- TODO: settings window for pointing to ollama, comfyui, tts ... -->
             
             <Button Content="market session 1" Click="MarketSessionTester1_Click"/>
             <Button Content="inventory" Click="InventoryTester_Click"/>
+            <Button Content="PropertyEditDialog" Click="PropertyEditDialog_Click"/>
         </WrapPanel>
     </Grid>
 </Window>

@@ -1,13 +1,24 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net9.0</TargetFramework>
+    <TargetFramework>net9.0-windows</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UseWPF>true</UseWPF>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.SemanticKernel.Connectors.Ollama" Version="1.32.0-alpha" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Game.Core">
+      <HintPath>..\lib\Game.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="Game.Math_WPF">
+      <HintPath>..\lib\Game.Math_WPF.dll</HintPath>
+    </Reference>
   </ItemGroup>
 
 </Project>

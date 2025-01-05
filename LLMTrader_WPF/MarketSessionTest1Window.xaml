@@ -4,7 +4,6 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:LLMTrader_WPF"
-        mc:Ignorable="d"
         Title="MarketSessionTestWindow" ResizeMode="CanResizeWithGrip" Width="700" Height="1000">
     <Grid Margin="8">
         <Grid.RowDefinitions>

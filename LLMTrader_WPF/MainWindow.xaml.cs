@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using Core;
+using System.Text;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -20,6 +21,18 @@ namespace LLMTrader_WPF
             Background = SystemColors.ControlBrush;
         }
 
+        private void Settings_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                new SettingsWindow().Show();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, Title, MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
         private void MarketSessionTester1_Click(object sender, RoutedEventArgs e)
         {
             try
@@ -36,6 +49,21 @@ namespace LLMTrader_WPF
             try
             {
                 new InventoryTestWindow().Show();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, Title, MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+        private void PropertyEditDialog_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                new PropertyEditDialog()
+                {
+                    LoreContext = "This is a description of an eagle",
+                    OriginalText = "too round to fly",
+                }.Show();
             }
             catch (Exception ex)
             {

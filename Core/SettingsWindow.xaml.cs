@@ -1,4 +1,5 @@
 ﻿using Game.Core;
+using Game.Core.Threads;
 using Game.Math_WPF.WPF;
 using OllamaSharp;
 using System;
@@ -33,12 +34,33 @@ namespace Core
         }
 
         #endregion
+        #region record: OllamaQuery
+
+        private record OllamaQuery_Request
+        {
+            public string URL { get; init; }
+        }
+
+        private record OllamaQuery_Response
+        {
+            public OllamaSharp.Models.Model[] Models { get; init; }
+            public Exception Ex { get; init; }
+        }
+
+        #endregion
 
         #region Declaration Section
 
         public ObservableCollection<string> ModelList { get; private set; } = [];
-        public ObservableCollection<string> ModelDetailsList_ORIG { get; private set; } = [];
         public ObservableCollection<ModelDetail> ModelDetailsList { get; private set; } = [];
+
+        /// <summary>
+        /// This does work in a background thread and makes sure that only the last call to start
+        /// calls finish event.  All intermediate calls to start are silently ignored
+        /// 
+        /// This allows the user to type out the url without issue
+        /// </summary>
+        private readonly BackgroundTaskWorker<OllamaQuery_Request, OllamaQuery_Response> _modelQuery;
 
         private readonly DropShadowEffect _errorEffect;
 
@@ -53,7 +75,8 @@ namespace Core
             DataContext = this;
 
             Background = SystemColors.ControlBrush;
-            //border.BorderBrush = SystemColors.WindowFrameBrush;
+
+            _modelQuery = new BackgroundTaskWorker<OllamaQuery_Request, OllamaQuery_Response>(GetOllamaModels, FinishedOllamaModels, ExceptionOllamaModels);
 
             _errorEffect = new DropShadowEffect()
             {
@@ -108,19 +131,65 @@ namespace Core
         {
             try
             {
-                var client = new OllamaApiClient(txtOllamaURL.Text);
-                var models = client.ListLocalModelsAsync().GetAwaiter().GetResult().
-                    OrderByDescending(o => o.Size).
-                    ThenBy(o => o.Name).
+                var request = new OllamaQuery_Request()
+                {
+                    URL = txtOllamaURL.Text,
+                };
+
+                ModelList.Clear();
+                ModelDetailsList.Clear();
+                txtOllamaURL.Effect = _errorEffect;     // let the finish task set this to null if valid
+
+                _modelQuery.Start(request);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.ToString(), Title, MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+        private static OllamaQuery_Response GetOllamaModels(OllamaQuery_Request request, CancellationToken cancel)
+        {
+            try
+            {
+                if (cancel.IsCancellationRequested)
+                    return null;        // it doesn't matter what gets returned, it will be ignored
+
+                var client = new OllamaApiClient(request.URL);
+                var models = client.ListLocalModelsAsync().
+                    GetAwaiter().
+                    GetResult().
                     ToArray();
+
+                return new OllamaQuery_Response() { Models = models };
+            }
+            catch (Exception ex)
+            {
+                return new OllamaQuery_Response() { Ex = ex };
+            }
+        }
+        private void FinishedOllamaModels(OllamaQuery_Request request, OllamaQuery_Response response)
+        {
+            try
+            {
+                // NOTE: this gets invoked on the main thread, so the below is threadsafe
 
                 ModelList.Clear();
                 ModelDetailsList.Clear();
 
+                if (response.Ex != null)
+                {
+                    txtOllamaURL.Effect = _errorEffect;
+                    return;
+                }
+
+                var models = response.Models.
+                    OrderByDescending(o => o.Size).
+                    ThenBy(o => o.Name).
+                    ToArray();
+
                 foreach (var model in models)
                 {
                     ModelList.Add(model.Name);
-                    ModelDetailsList_ORIG.Add($"{model.Name} | params: {model.Details.ParameterSize} | quant: {model.Details.QuantizationLevel} | family: {model.Details.Family} | total size: {SizeSuffix(model.Size)}");
                     ModelDetailsList.Add(new ModelDetail()
                     {
                         Name = model.Name,
@@ -135,8 +204,19 @@ namespace Core
             }
             catch (Exception ex)
             {
-                //MessageBox.Show(ex.ToString(), Title, MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show(ex.ToString(), Title, MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+        private void ExceptionOllamaModels(OllamaQuery_Request request, Exception ex)
+        {
+            try
+            {
+                // NOTE: this gets invoked on the main thread, so this is threadsafe
                 txtOllamaURL.Effect = _errorEffect;
+            }
+            catch (Exception ex1)
+            {
+                MessageBox.Show(ex.ToString(), Title, MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 

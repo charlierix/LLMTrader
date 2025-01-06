@@ -5,31 +5,64 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Core"
         mc:Ignorable="d"
-        Title="PropertyEditDialog" ResizeMode="CanResizeWithGrip" Width="600" Height="400" Loaded="Window_Loaded">
-    <Grid Margin="8">
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="1*"/>
-            <ColumnDefinition Width="8"/>
-            <ColumnDefinition Width="1*"/>
-        </Grid.ColumnDefinitions>
+        Title="PropertyEditDialog" ResizeMode="CanResizeWithGrip" Width="600" Height="400" Loaded="Window_Loaded" Closed="Window_Closed">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="1*"/>
+            <RowDefinition Height="auto"/>
+        </Grid.RowDefinitions>
 
-        <Grid Grid.Column="0">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="1*"/>
-                <RowDefinition Height="8"/>
-                <RowDefinition Height="1*"/>
-            </Grid.RowDefinitions>
+        <Grid Margin="8" Grid.Row="0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="1*"/>
+                <ColumnDefinition Width="8"/>
+                <ColumnDefinition Width="1*"/>
+            </Grid.ColumnDefinitions>
 
-            <TextBox Grid.Row="0" x:Name="txtOrig" Text="{Binding Path=OriginalText}" IsReadOnly="True" FontStyle="Italic" AcceptsReturn="True" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto"/>
+            <Grid Grid.Column="0">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="1*"/>
+                    <RowDefinition Height="8"/>
+                    <RowDefinition Height="1*"/>
+                    <RowDefinition Height="auto"/>
+                </Grid.RowDefinitions>
 
-            <GridSplitter Grid.Row="1" ResizeDirection="Rows" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
+                <TextBox Grid.Row="0" x:Name="txtOrig" Text="{Binding Path=OriginalText}" IsReadOnly="True" FontStyle="Italic" AcceptsReturn="True" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto"/>
 
-            <TextBox Grid.Row="2" x:Name="txtEdit" Text="Some Text" AcceptsReturn="True" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto"/>
-            <Button Grid.Row="2" Content="click me" HorizontalAlignment="Center" VerticalAlignment="Center" Click="Button_Click"/>
+                <GridSplitter Grid.Row="1" ResizeDirection="Rows" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
+
+                <TextBox Grid.Row="2" x:Name="txtEdit" Text="Some Text" AcceptsReturn="True" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto"/>
+
+                <Button Grid.Row="3" Content="call llm" Margin="0,4,0,0" Click="CallLLM_Click"/>
+            </Grid>
+
+            <GridSplitter Grid.Column="1" ResizeDirection="Columns" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
+
+            <TabControl Grid.Column="2" x:Name="tabcontrol">
+                <!--<TabItem Header="Sample Qualifier">
+                <ListBox/>
+            </TabItem>-->
+            </TabControl>
         </Grid>
 
-        <GridSplitter Grid.Column="1" ResizeDirection="Columns" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
+        <StatusBar Grid.Row="1">
+            <StatusBar.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="1*"/>
+                            <ColumnDefinition Width="auto"/>
+                        </Grid.ColumnDefinitions>
+                    </Grid>
+                </ItemsPanelTemplate>
+            </StatusBar.ItemsPanel>
 
-        <ListBox Grid.Column="2"/>
+            <StatusBarItem Grid.Column="0">
+                <TextBlock x:Name="lblStatusGeneral"/>
+            </StatusBarItem>
+            <StatusBarItem Grid.Column="1">
+                <TextBlock x:Name="lblStatusCurrentCalls"/>
+            </StatusBarItem>
+        </StatusBar>
     </Grid>
 </Window>

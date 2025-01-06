@@ -4,9 +4,9 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Core"
-        Title="Settings" ResizeMode="CanResizeWithGrip" WindowStyle="None" WindowStartupLocation="CenterScreen" AllowsTransparency="True" Width="400" Height="300" Loaded="Window_Loaded" PreviewMouseLeftButtonDown="Window_PreviewMouseLeftButtonDown">
+        Title="Settings" SizeToContent="Height" ResizeMode="CanResizeWithGrip" WindowStyle="None" WindowStartupLocation="CenterScreen" AllowsTransparency="True" Width="500" Loaded="Window_Loaded" PreviewMouseLeftButtonDown="Window_PreviewMouseLeftButtonDown">
 
-    <Border x:Name="border" BorderThickness="1" CornerRadius="4">
+    <Border BorderThickness="1" CornerRadius="4" BorderBrush="{x:Static SystemColors.WindowFrameBrush}">
         <Grid>
             <Grid.RowDefinitions>
                 <RowDefinition Height="1*"/>
@@ -14,7 +14,8 @@
                 <RowDefinition Height="auto"/>
             </Grid.RowDefinitions>
 
-            <ScrollViewer Grid.Row="0" Padding="8" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+            <!--<ScrollViewer Grid.Row="0" Padding="8" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">-->
+            <StackPanel Margin="8">
                 <Expander Grid.Row="0" Header="Ollama Settings" IsExpanded="True">
                     <Grid Margin="0,8,0,0">
                         <Grid.ColumnDefinitions>
@@ -30,25 +31,66 @@
                             <RowDefinition Height="8"/>
                             <RowDefinition Height="auto"/>
                             <RowDefinition Height="auto"/>
-                            <!--<RowDefinition Height="8"/>
-                            <RowDefinition Height="auto"/>-->
+                            <RowDefinition Height="8"/>
+                            <!--<RowDefinition Height="auto"/>-->
+                            <RowDefinition Height="1*"/>
                         </Grid.RowDefinitions>
 
-                        <Label Grid.Column="0" Grid.ColumnSpan="5" Grid.Row="0" Content="URL"/>
-                        <TextBox Grid.Column="0" Grid.ColumnSpan="5" Grid.Row="1" x:Name="txtOllamaURL" Text="http://192.168.0.122:11434" ToolTip="type 'ollama serve' in command prompt"/>
+                        <StackPanel Grid.Column="0" Grid.ColumnSpan="5" Grid.Row="0" Orientation="Horizontal">
+                            <Label Content="URL"/>
+                            <Label Content="type 'ollama serve' in command prompt" Foreground="{x:Static SystemColors.GrayTextBrush}" FontStyle="Italic" Margin="12,0,0,0"/>
+                        </StackPanel>
+                        <TextBox Grid.Column="0" Grid.ColumnSpan="5" Grid.Row="1" x:Name="txtOllamaURL" TextChanged="txtOllamaURL_TextChanged"/>
 
                         <Label Grid.Column="2" Grid.Row="3" Content="Model" HorizontalAlignment="Center"/>
                         <Label Grid.Column="4" Grid.Row="3" Content="Threads" HorizontalAlignment="Center"/>
 
                         <TextBlock Grid.Column="0" Grid.Row="4" Text="General" HorizontalAlignment="Right" VerticalAlignment="Center"/>
-                        <TextBox Grid.Column="2" Grid.Row="4" x:Name="txtOllamaModelGeneral" Text="jean-luc/tiger-gemma-9b-v3:fp16"/>
+                        <ComboBox Grid.Column="2" Grid.Row="4" x:Name="cboOllamaModelGeneral" IsEditable="True" ItemsSource="{Binding Path=ModelList}"/>
+
                         <TextBox Grid.Column="4" Grid.Row="4" x:Name="txtOllamaThreadsGeneral" Text="2"/>
                         <!--<TextBlock Grid.Column="0" Grid.Row="6" Text="Embed" HorizontalAlignment="Right" VerticalAlignment="Center"/>
                         <TextBox Grid.Column="2" Grid.Row="6" x:Name="txtOllamaModelEmbed" Text="mxbai-embed-large"/>
                         <TextBox Grid.Column="4" Grid.Row="6" x:Name="txtOllamaThreadsEmbed" Text="2"/>-->
+
+                        <ListBox Grid.Column="0" Grid.ColumnSpan="5" Grid.Row="6" x:Name="lstModelDetails" ItemsSource="{Binding Path=ModelDetailsList}" Grid.IsSharedSizeScope="True" MaxHeight="400" HorizontalContentAlignment="Stretch" SelectionChanged="lstModelDetails_SelectionChanged">
+                            <ListBox.ItemTemplate>
+                                <DataTemplate>
+                                    <!--<Grid Background="Yellow" HorizontalAlignment="Stretch" Width="{Binding ActualWidth, RelativeSource={RelativeSource AncestorType=ListBox}}">-->
+                                    <Grid HorizontalAlignment="Stretch">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="auto" SharedSizeGroup="col0"/>
+                                            <ColumnDefinition Width="8"/>
+                                            <ColumnDefinition Width="1*"/>
+                                            <ColumnDefinition Width="auto" SharedSizeGroup="col3"/>
+                                        </Grid.ColumnDefinitions>
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="auto"/>
+                                            <RowDefinition Height="2"/>
+                                            <RowDefinition Height="auto"/>
+                                        </Grid.RowDefinitions>
+
+                                        <TextBlock Grid.Column="0" Grid.Row="0" Text="{Binding Name}" FontSize="14" FontWeight="DemiBold"/>
+
+                                        <StackPanel Grid.Column="3" Grid.Row="0" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Bottom">
+                                            <TextBlock Text="{Binding ParameterSize}" VerticalAlignment="Center"/>
+                                            <TextBlock Text=" params x " VerticalAlignment="Center"/>
+                                            <TextBlock Text="{Binding QuantizationLevel}" VerticalAlignment="Center"/>
+                                            <TextBlock Text=" = " VerticalAlignment="Center"/>
+                                            <TextBlock Text="{Binding TotalSize}" FontWeight="DemiBold" VerticalAlignment="Center"/>
+                                        </StackPanel>
+
+                                        <StackPanel Grid.Column="0" Grid.ColumnSpan="3" Grid.Row="2" Orientation="Horizontal">
+                                            <TextBlock Text="{Binding Family}" FontSize="9" Foreground="DimGray" VerticalAlignment="Center"/>
+                                            <TextBlock Text=" family" FontSize="9" Foreground="DimGray" VerticalAlignment="Center"/>
+                                        </StackPanel>
+                                    </Grid>
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
                     </Grid>
                 </Expander>
-            </ScrollViewer>
+            </StackPanel>
 
             <UniformGrid Grid.Row="2" Rows="1" HorizontalAlignment="Right" Margin="5">
                 <UniformGrid.Resources>

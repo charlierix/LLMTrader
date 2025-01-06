@@ -14,6 +14,8 @@ namespace LLMTrader_WPF
 {
     public partial class MainWindow : Window
     {
+        private SettingsWindow _settingsWindow = null;
+
         public MainWindow()
         {
             InitializeComponent();
@@ -25,7 +27,16 @@ namespace LLMTrader_WPF
         {
             try
             {
-                new SettingsWindow().Show();
+                if(_settingsWindow == null)
+                {
+                    _settingsWindow = new SettingsWindow();
+                    _settingsWindow.Closed += (_, _) => _settingsWindow = null;
+                    _settingsWindow.Show();
+                }
+                else
+                {
+                    _settingsWindow.Focus();
+                }
             }
             catch (Exception ex)
             {
@@ -61,7 +72,21 @@ namespace LLMTrader_WPF
             {
                 new PropertyEditDialog()
                 {
-                    LoreContext = "This is a description of an eagle",
+                    LorePrompts =
+                    [
+                        new PropertyEditDialog.LorePrompt()
+                        {
+                            Name = "Description",
+                            Prompt = "You will receive some text about an eagle in a game world.  Please generate a creative description expanding on that text",
+                        },
+
+                        new PropertyEditDialog.LorePrompt()
+                        {
+                            Name = "Tags",
+                            Prompt = "You will receive some text about an eagle in a game world.  Please generate a bullet list of tags that help categorize that eagle",
+                        },
+                    ],
+
                     OriginalText = "too round to fly",
                 }.Show();
             }

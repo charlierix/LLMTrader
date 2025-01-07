@@ -80,10 +80,11 @@ namespace LLMTrader_WPF
                             Prompt = "You will receive some text about an eagle in a game world.  Please generate a creative description expanding on that text",
                         },
 
+                        // the gemma model is really chatty and generates too much surrounding text
                         new PropertyEditDialog.LorePrompt()
                         {
                             Name = "Tags",
-                            Prompt = "You will receive some text about an eagle in a game world.  Please generate a bullet list of tags that help categorize that eagle",
+                            Prompt = "You will receive some text about an eagle in a game world.  Please generate a bullet list of tags that help categorize that eagle.  Please do not describe the tags, just list the tags themselves",
                         },
                     ],
 

@@ -1,20 +1,9 @@
 ﻿using Game.Math_WPF.WPF;
 using Microsoft.SemanticKernel.ChatCompletion;
 using OllamaSharp;
-using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
 
 namespace Core
 {
@@ -151,9 +140,11 @@ namespace Core
 
                 IChatCompletionService chatService = new OllamaApiClient(settings.llm.url, settings.llm.model).AsChatCompletionService();
 
+                var schedule = TaskScheduler.FromCurrentSynchronizationContext();
+
                 for (int i = 0; i < LorePrompts.Length; i++)
                 {
-                    // TODO: ignore certain exceptions.. timeout
+                    int index = i;      // can't send i to the continuewith, since it will fully iterate before continue executes.  Each iteration of the for loop will have its own copy of index that the corresponding continuewith will see
 
                     ChatHistory chatHistory = new ChatHistory(LorePrompts[i].Prompt);
                     chatHistory.AddUserMessage(txtEdit.Text);
@@ -161,11 +152,21 @@ namespace Core
                     UpdateStatus_CurrentCalls(1);
 
                     chatService.GetChatMessageContentAsync(chatHistory).
-                        ContinueWith((a, b) =>
+                        ContinueWith(response =>
                         {
                             UpdateStatus_CurrentCalls(-1);
-                            _listboxes[i].Items.Add(a.ToString());
-                        }, TaskScheduler.FromCurrentSynchronizationContext);
+
+                            if (response.IsFaulted && response.Exception != null)
+                            {
+                                // TODO: figure what what a timeout exception looks like and ignore it - maybe retry
+                                //if (!IsTimeoutException(response.Exception))
+                                    throw response.Exception;
+                            }
+                            else
+                            {
+                                _listboxes[index].Items.Add(response.Result.ToString());
+                            }
+                        }, scheduler: schedule);
                 }
             }
             catch (Exception ex)

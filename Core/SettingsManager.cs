@@ -1,10 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
+﻿using System.IO;
 using System.Text.Json;
-using System.Threading.Tasks;
 
 namespace Core
 {
@@ -75,7 +70,7 @@ namespace Core
                 {
                     llm = new SettingsModel_LLM
                     {
-                        url = "http://192.168.0.122:11434",
+                        url = "http://192.168.0.1:11434",
                         model = "jean-luc/tiger-gemma-9b-v3:fp16",
                         max_threads = 2,
                     }

@@ -22,6 +22,16 @@ namespace Core
             /// Instructions to the llm about what is requested of it
             /// </summary>
             public string Prompt { get; init; }
+
+            public (string user, string agent)[] Examples { get; init; }
+
+            public LorePrompt_ParseType ParseType { get; init; }
+        }
+
+        public enum LorePrompt_ParseType
+        {
+            None,
+            BulletList,
         }
 
         #endregion
@@ -147,9 +157,23 @@ namespace Core
                     int index = i;      // can't send i to the continuewith, since it will fully iterate before continue executes.  Each iteration of the for loop will have its own copy of index that the corresponding continuewith will see
 
                     ChatHistory chatHistory = new ChatHistory(LorePrompts[i].Prompt);
+
+                    if (LorePrompts[i].Examples != null)
+                    {
+                        foreach (var example in LorePrompts[i].Examples)
+                        {
+                            chatHistory.AddUserMessage(example.user);
+                            chatHistory.AddAssistantMessage(example.agent);
+                        }
+                    }
+
                     chatHistory.AddUserMessage(txtEdit.Text);
 
                     UpdateStatus_CurrentCalls(1);
+
+
+                    // TODO: if there is an exception or it doesn't generate meaningful results, retry once or twice
+
 
                     chatService.GetChatMessageContentAsync(chatHistory).
                         ContinueWith(response =>
@@ -158,13 +182,51 @@ namespace Core
 
                             if (response.IsFaulted && response.Exception != null)
                             {
-                                // TODO: figure what what a timeout exception looks like and ignore it - maybe retry
-                                //if (!IsTimeoutException(response.Exception))
-                                    throw response.Exception;
+                                throw response.Exception;
                             }
                             else
                             {
-                                _listboxes[index].Items.Add(response.Result.ToString());
+                                try
+                                {
+                                    string result = response.Result.ToString();
+
+                                    string[] result_arr = null;
+
+                                    switch (LorePrompts[index].ParseType)
+                                    {
+                                        case LorePrompt_ParseType.None:
+                                            result_arr = [result];
+                                            break;
+
+                                        case LorePrompt_ParseType.BulletList:
+                                            result_arr = UtilityLLM.ExtractBulletList(result);
+                                            break;
+
+                                        default:
+                                            throw new ApplicationException($"Unknown LorePrompt_ParseType: {LorePrompts[index].ParseType}");
+                                    }
+
+                                    foreach (string item in result_arr)
+                                        _listboxes[index].Items.Add(item);
+                                }
+                                catch (Exception ex1)
+                                {
+                                    if (ex1 is TimeoutException || ex1 is TaskCanceledException)
+                                    {
+                                        // Just ignore the error.  Getting on first load
+                                    }
+                                    else if (ex1 is AggregateException ex_agg)
+                                    {
+                                        if (ex_agg.InnerException is TimeoutException || ex_agg.InnerException is TaskCanceledException)
+                                        {
+                                            // Just ignore the error.  Getting on first load
+                                        }
+                                    }
+                                    else
+                                    {
+                                        MessageBox.Show($"Exception while getting result: {ex1}", Title, MessageBoxButton.OK, MessageBoxImage.Error);
+                                    }
+                                }
                             }
                         }, scheduler: schedule);
                 }

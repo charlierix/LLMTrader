@@ -27,7 +27,7 @@ namespace LLMTrader_WPF
         {
             try
             {
-                if(_settingsWindow == null)
+                if (_settingsWindow == null)
                 {
                     _settingsWindow = new SettingsWindow();
                     _settingsWindow.Closed += (_, _) => _settingsWindow = null;
@@ -70,6 +70,8 @@ namespace LLMTrader_WPF
         {
             try
             {
+                string item_name = "eagle";
+
                 new PropertyEditDialog()
                 {
                     LorePrompts =
@@ -77,14 +79,17 @@ namespace LLMTrader_WPF
                         new PropertyEditDialog.LorePrompt()
                         {
                             Name = "Description",
-                            Prompt = "You will receive some text about an eagle in a game world.  Please generate a creative description expanding on that text",
+                            Prompt = $"You will receive some text about a {item_name} in a game world.  Please generate a creative description expanding on that text.  This isn't a story, it is a description of that {item_name}",
+                            ParseType = PropertyEditDialog.LorePrompt_ParseType.None,
                         },
 
                         // the gemma model is really chatty and generates too much surrounding text
                         new PropertyEditDialog.LorePrompt()
                         {
                             Name = "Tags",
-                            Prompt = "You will receive some text about an eagle in a game world.  Please generate a bullet list of tags that help categorize that eagle.  Please do not describe the tags, just list the tags themselves",
+                            Prompt = $"You will receive some text about a {item_name} in a game world.  Please generate a bullet list of tags that help categorize that {item_name}.  This bullet list will be interpretted progromatically, so please only give the tags, no other text or symbols.  Don't reply with anything except a bullet list",
+                            //Examples = [("it is very big", @"")],     // how to provide a meaningful and still be generic (and not misleading)
+                            ParseType = PropertyEditDialog.LorePrompt_ParseType.BulletList,
                         },
                     ],
 

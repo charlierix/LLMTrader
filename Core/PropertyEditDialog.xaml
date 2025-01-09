@@ -27,21 +27,30 @@
                     <RowDefinition Height="auto"/>
                 </Grid.RowDefinitions>
 
-                <TextBox Grid.Row="0" x:Name="txtOrig" Text="{Binding Path=OriginalText}" IsReadOnly="True" FontStyle="Italic" AcceptsReturn="True" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto"/>
+                <TextBox Grid.Row="0" x:Name="txtOrig" Text="{Binding Path=OriginalText}" IsReadOnly="True" FontStyle="Italic" AcceptsReturn="True" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto" TextWrapping="Wrap"/>
 
                 <GridSplitter Grid.Row="1" ResizeDirection="Rows" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
 
-                <TextBox Grid.Row="2" x:Name="txtEdit" Text="Some Text" AcceptsReturn="True" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto"/>
+                <TextBox Grid.Row="2" x:Name="txtEdit" Text="Some Text" AcceptsReturn="True" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto" TextWrapping="Wrap"/>
 
                 <Button Grid.Row="3" Content="call llm" Margin="0,4,0,0" Click="CallLLM_Click"/>
             </Grid>
 
             <GridSplitter Grid.Column="1" ResizeDirection="Columns" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
 
+            <!-- This will have tabitems with child listboxes added programatically -->
             <TabControl Grid.Column="2" x:Name="tabcontrol">
-                <!--<TabItem Header="Sample Qualifier">
-                <ListBox/>
-            </TabItem>-->
+                <TabControl.Resources>
+                    <Style TargetType="ListBox">
+                        <Setter Property="ItemTemplate">
+                            <Setter.Value>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding}" TextWrapping="Wrap" Width="{Binding ActualWidth, RelativeSource={RelativeSource AncestorType=ListBox}}"/>
+                                </DataTemplate>
+                            </Setter.Value>
+                        </Setter>
+                    </Style>
+                </TabControl.Resources>
             </TabControl>
         </Grid>
 

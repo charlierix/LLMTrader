@@ -33,6 +33,9 @@
             <Button Content="market session 1" Click="MarketSessionTester1_Click"/>
             <Button Content="inventory" Click="InventoryTester_Click"/>
             <Button Content="PropertyEditDialog" Click="PropertyEditDialog_Click"/>
+
+            <Label Content="Markdown Tests" Margin="16,0,0,0"/>
+            <Button Content="bolded list" Click="Markdown_BoldedList_Click"/>
         </WrapPanel>
     </Grid>
 </Window>

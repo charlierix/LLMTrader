@@ -1,14 +1,5 @@
 ﻿using Core;
-using System.Text;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 
 namespace LLMTrader_WPF
 {
@@ -76,14 +67,15 @@ namespace LLMTrader_WPF
                 {
                     LorePrompts =
                     [
-                        new PropertyEditDialog.LorePrompt()
-                        {
-                            Name = "Description",
-                            Prompt = $"You will receive some text about a {item_name} in a game world.  Please generate a creative description expanding on that text.  This isn't a story, it is a description of that {item_name}",
-                            ParseType = PropertyEditDialog.LorePrompt_ParseType.None,
-                        },
+                        //new PropertyEditDialog.LorePrompt()
+                        //{
+                        //    Name = "Description",
+                        //    Prompt = $"You will receive some text about a {item_name} in a game world.  Please generate a creative description expanding on that text.  This isn't a story, it is a description of that {item_name}",
+                        //    ParseType = PropertyEditDialog.LorePrompt_ParseType.None,
+                        //},
 
-                        // the gemma model is really chatty and generates too much surrounding text
+                        // the gemma model is really chatty and generates too much surrounding text.  ended up using a markup parser
+                        // to only get the bullet list
                         new PropertyEditDialog.LorePrompt()
                         {
                             Name = "Tags",
@@ -99,6 +91,28 @@ namespace LLMTrader_WPF
             catch (Exception ex)
             {
                 MessageBox.Show(ex.Message, Title, MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private void Markdown_BoldedList_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                string text =
+@"* hello *
+* there *
+* everybody *";
+
+                string parsed = UtilityLLM.ExtractOnlyText(text);
+
+
+
+
+
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.ToString(), Title, MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
     }

@@ -236,10 +236,132 @@ namespace Core
                 MessageBox.Show(ex.ToString(), Title, MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
+        private void CallLLM2_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                string user_text = txtEdit.Text.Trim();
+
+                if (user_text == "")
+                {
+                    MessageBox.Show("Please enter some text first", Title, MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return;
+                }
+
+                var settings = SettingsManager.Settings;
+
+                IChatCompletionService chatService = new OllamaApiClient(settings.llm.url, settings.llm.model).AsChatCompletionService();
+
+                var schedule = TaskScheduler.FromCurrentSynchronizationContext();
+
+                for (int i = 0; i < LorePrompts.Length; i++)
+                {
+                    int index = i;      // can't send i to the continuewith, since it will fully iterate before continue executes.  Each iteration of the for loop will have its own copy of index that the corresponding continuewith will see
+
+                    UpdateStatus_CurrentCalls(1);
+
+                    var result = Task.Run(() => CallLLM(chatService, LorePrompts[index], user_text)).
+                        ContinueWith(result =>
+                        {
+                            UpdateStatus_CurrentCalls(-1);
+
+                            string[] result_text = result.Result;
+
+                            if(result_text != null && result_text.Length > 0)       // there's a chance of exception or the llm not replying.  retry logic was already done in CallLLM function
+                                PopulateListbox(index, result_text);
+                        }, scheduler: schedule);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.ToString(), Title, MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
 
         #endregion
 
         #region Private Methods
+
+        private static string[] CallLLM(IChatCompletionService chatService, LorePrompt lore_prompt, string user_text)
+        {
+            int retry_count = 0;
+
+            while (retry_count < 3)
+            {
+                retry_count++;
+
+                string result = CallLLM_Call(chatService, lore_prompt, user_text);
+
+                if (string.IsNullOrWhiteSpace(result))
+                    continue;
+
+                string[] parsed = ParseLLMResult(lore_prompt, result);
+                if (parsed == null || parsed.Length == 0)
+                    continue;
+
+                return parsed;
+            }
+
+            return null;
+        }
+        private static string CallLLM_Call(IChatCompletionService chatService, LorePrompt lore_prompt, string user_text)
+        {
+            try
+            {
+                // Prep for the call
+                ChatHistory chatHistory = new ChatHistory(lore_prompt.Prompt);
+
+                if (lore_prompt.Examples != null)
+                {
+                    foreach (var example in lore_prompt.Examples)
+                    {
+                        chatHistory.AddUserMessage(example.user);
+                        chatHistory.AddAssistantMessage(example.agent);
+                    }
+                }
+
+                chatHistory.AddUserMessage(user_text);
+
+                // Make the call
+                return chatService.GetChatMessageContentAsync(chatHistory).
+                    GetAwaiter().
+                    GetResult().
+                    ToString();     // may throw an exception
+            }
+            catch (Exception)
+            {
+                return null;
+            }
+        }
+
+        private static string[] ParseLLMResult(LorePrompt lore_prompt, string result)
+        {
+            try
+            {
+                switch (lore_prompt.ParseType)
+                {
+                    case LorePrompt_ParseType.None:
+                        return [result];
+
+                    case LorePrompt_ParseType.BulletList:
+                        return UtilityLLM.ExtractBulletList(result);
+
+                    default:
+                        //throw new ApplicationException($"Unknown LorePrompt_ParseType: {lore_prompt.ParseType}");
+                        return null;
+                }
+            }
+            catch (Exception)
+            {
+                return null;
+            }
+        }
+
+        private void PopulateListbox(int index, string[] response_text)
+        {
+            foreach (string item in response_text)
+                _listboxes[index].Items.Add(item);
+        }
 
         private void UpdateStatus_CurrentCalls(int delta)
         {

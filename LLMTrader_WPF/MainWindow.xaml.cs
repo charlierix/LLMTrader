@@ -67,12 +67,12 @@ namespace LLMTrader_WPF
                 {
                     LorePrompts =
                     [
-                        //new PropertyEditDialog.LorePrompt()
-                        //{
-                        //    Name = "Description",
-                        //    Prompt = $"You will receive some text about a {item_name} in a game world.  Please generate a creative description expanding on that text.  This isn't a story, it is a description of that {item_name}",
-                        //    ParseType = PropertyEditDialog.LorePrompt_ParseType.None,
-                        //},
+                        new PropertyEditDialog.LorePrompt()
+                        {
+                            Name = "Description",
+                            Prompt = $"You will receive some text about a {item_name} in a game world.  Please generate a creative description expanding on that text.  This isn't a story, it is a description of that {item_name}",
+                            ParseType = PropertyEditDialog.LorePrompt_ParseType.None,
+                        },
 
                         // the gemma model is really chatty and generates too much surrounding text.  ended up using a markup parser
                         // to only get the bullet list

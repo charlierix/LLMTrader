@@ -43,35 +43,6 @@ namespace Core
         /// <summary>
         /// Extracts bullet list items out of markdown, ignores any other text
         /// </summary>
-        public static string[] ExtractBulletList_ATTEMPT1(string text)
-        {
-            List<string> retVal = [];
-
-            var parsed = Markdown.Parse(text);
-
-            foreach (var section in parsed)
-            {
-                // This would be text describing the bullet list, or maybe text after - just ignore it
-                //if (section is ParagraphBlock paragraph)
-                //    foreach (var line in paragraph.Inline)
-                //        string line_text = line.ToString();
-
-                if (section is ListBlock list)
-                {
-                    foreach (var list_item in list)
-                    {
-                        string item_text = ExtractBulletList_ItemText(list_item);
-
-                        // TODO: may need to further filter this text, removing any text inside of parenthesis, or other comments to the side
-
-                        if (item_text != null)
-                            retVal.Add(item_text);
-                    }
-                }
-            }
-
-            return retVal.ToArray();
-        }
         public static string[] ExtractBulletList(string text, int max_words_perline = 5)
         {
             var retVal = new List<(double score, string[] items)>();
@@ -98,16 +69,6 @@ namespace Core
 
                 else
                     retVal.Add(ExtractBulletList_Block(section, 8, max_words_perline));
-
-
-
-                //if (section is ParagraphBlock paragraph)
-                //    //retVal.Add(ExtractBulletList_Paragraph(paragraph, 8));
-                //    retVal.Add(ExtractBulletList_Block(section, 8, max_words_perline));
-
-                //else if (section is ListBlock list)
-                //    //retVal.Add((12, ExtractBulletList_ListBlock(list)));
-                //    retVal.Add(ExtractBulletList_Block(section, 12, max_words_perline));
             }
 
             // Find the best one (if there is one)
@@ -119,7 +80,6 @@ namespace Core
             return retVal[best_index].items;
         }
 
-
         public static string ExtractOnlyText(string text)
         {
             StringBuilder retVal = new StringBuilder();
@@ -130,6 +90,82 @@ namespace Core
 
             return retVal.ToString();
         }
+
+        #region Private Methods
+
+        private static (double score, string[] lines) ExtractBulletList_Block(Block block, double max_score, int max_words)
+        {
+            const int COUNT_MAX_SCORE = 7;
+            const double POW = 0.33333333;
+
+            var sb = new StringBuilder();
+
+            ExtractOnlyText_block(block, sb);
+
+            string[] split = sb.ToString().
+                Replace("\r\n", "\n").
+                Split('\n');
+
+            var lines = new List<string>();
+
+            foreach (string line in split)
+            {
+                string text = line.Trim();
+                if (text == "")
+                    continue;
+
+                // throw out lines with more than N words
+                MatchCollection matches = Regex.Matches(text, @"\w+");
+                if (matches.Count > max_words)
+                    continue;
+
+                if (matches.Count == 0)     // just special characters
+                    continue;
+
+                if (matches.Count == 1 && text.Length > 30)     // had a case where everything was on one line without spaces in between.  If that's the case, split based on capitalization (worst case, it doesn't split and there's just one element that is the original line)
+                    lines.AddRange(Regex.Split(text, @"(?<=[a-z])(?=[A-Z])"));
+
+                else
+                    lines.Add(text);
+            }
+
+            if (lines.Count == 0)
+                return (0, []);
+
+            lines = lines.
+                Distinct().
+                ToList();
+
+            // Generate a score based on the number of lines, more is better (up to COUNT_MAX_SCORE), normalized 0 to 1
+            double score = 1;
+
+            if (lines.Count < COUNT_MAX_SCORE)
+                score = Math.Pow((double)lines.Count / (double)COUNT_MAX_SCORE, POW);
+
+            return (score * max_score, lines.ToArray());
+        }
+
+        private static int GetBestIndex<T>(IList<(double score, T item)> items)
+        {
+            int best_index = -1;
+
+            for (int i = 0; i < items.Count; i++)
+            {
+                if (items[i].score.IsNearZero())
+                    continue;
+
+                if (best_index < 0)
+                    best_index = i;
+
+                else if (items[i].score > items[best_index].score)
+                    best_index = i;
+            }
+
+            return best_index;
+        }
+
+        #endregion
+        #region Private Methods - ExtractOnlyText
 
         private static void ExtractOnlyText_block(Block block, StringBuilder sb)
         {
@@ -226,178 +262,6 @@ namespace Core
                 return GetListBullet_block(block.Parent);
 
             return null;
-        }
-
-
-
-        #region Private Methods
-
-
-        private static (double score, string[] lines) ExtractBulletList_Block(Block block, double max_score, int max_words)
-        {
-            const int COUNT_MAX_SCORE = 7;
-            const double POW = 0.33333333;
-
-            var sb = new StringBuilder();
-
-            ExtractOnlyText_block(block, sb);
-
-            string[] split = sb.ToString().
-                Replace("\r\n", "\n").
-                Split('\n');
-
-            var lines = new List<string>();
-
-            foreach (string line in split)
-            {
-                string text = line.Trim();
-                if (text == "")
-                    continue;
-
-                // throw out lines with more than N words
-                MatchCollection matches = Regex.Matches(text, @"\w+");
-                if (matches.Count > max_words)
-                    continue;
-
-                if (matches.Count == 0)     // just special characters
-                    continue;
-
-                if (matches.Count == 1 && text.Length > 30)     // had a case where everything was on one line without spaces in between.  If that's the case, split based on capitalization (worst case, it doesn't split and there's just one element that is the original line)
-                    lines.AddRange(Regex.Split(text, @"(?<=[a-z])(?=[A-Z])"));
-
-                else
-                    lines.Add(text);
-            }
-
-            if (lines.Count == 0)
-                return (0, []);
-
-            lines = lines.
-                Distinct().
-                ToList();
-
-            // Generate a score based on the number of lines, more is better (up to COUNT_MAX_SCORE), normalized 0 to 1
-            double score = 1;
-
-            if (lines.Count < COUNT_MAX_SCORE)
-                score = Math.Pow((double)lines.Count / (double)COUNT_MAX_SCORE, POW);
-
-            return (score * max_score, lines.ToArray());
-        }
-
-
-        private static (double score, string[] lines) ExtractBulletList_Paragraph(ParagraphBlock paragraph, double max_score, int max_words = 5)
-        {
-            const int COUNT_MAX_SCORE = 7;
-            const double POW = 0.33333333;
-
-            var lines = new List<string>();
-
-            foreach (var line in paragraph.Inline)
-            {
-
-
-
-                // WARNING: this only works if line is LiteralInline
-                //
-                // had a case where the lines were bold:
-                // * item *
-                //
-                // This make line into EmphasisInline, then it's .Inline is LiteralInline
-
-                // but I'm worried it could be buried further.  need to make a more generic parser
-
-                string text = line.ToString().Trim();
-                if (text == "")
-                    continue;
-
-
-
-
-                // throw out lines with more than N words
-                MatchCollection matches = Regex.Matches(text, @"\w+");
-                if (matches.Count > max_words)
-                    continue;
-
-                if (matches.Count == 1 && text.Length > 30)     // had a case where everything was on one line without spaces in between.  If that's the case, split based on capitalization (worst case, it doesn't split and there's just one element that is the original line)
-                    lines.AddRange(Regex.Split(text, @"(?<=[a-z])(?=[A-Z])"));
-
-                else
-                    lines.Add(text);
-            }
-
-            if (lines.Count == 0)
-                return (0, []);
-
-            // Generate a score based on the number of lines, more is better (up to COUNT_MAX_SCORE), normalized 0 to 1
-            double score = 1;
-
-            if (lines.Count < COUNT_MAX_SCORE)
-                score = Math.Pow((double)lines.Count / (double)COUNT_MAX_SCORE, POW);
-
-            return (score * max_score, lines.ToArray());
-        }
-
-        private static string[] ExtractBulletList_ListBlock(ListBlock list)
-        {
-            List<string> retVal = [];
-
-            foreach (var list_item in list)
-            {
-                string item_text = ExtractBulletList_ItemText(list_item);
-
-                // TODO: may need to further filter this text, removing any text inside of parenthesis, or other comments to the side
-
-                if (item_text != null)
-                    retVal.Add(item_text);
-            }
-
-            return retVal.ToArray();
-        }
-        private static string ExtractBulletList_ItemText(Block list_item)
-        {
-            var retVal = new StringBuilder();
-
-            if (list_item is ListItemBlock item_block)
-            {
-                foreach (var sub_block in item_block)       // I'm not sure why this is enumerable
-                {
-                    if (sub_block is ParagraphBlock para)       // even though it's a paragraph, it should just be a single string (this is a parsed bullet list) -- had an example where it was bold, so extra slices for the bold syntax
-                    {
-                        foreach (var sub_sub_slice in para.Inline)
-                        {
-                            if (sub_sub_slice is LiteralInline text_slice)
-                            {
-                                if (retVal.Length > 0)
-                                    retVal.Append(' ');
-
-                                retVal.Append(sub_sub_slice.ToString());
-                            }
-                        }
-                    }
-                }
-            }
-
-            return retVal.ToString();
-        }
-
-        private static int GetBestIndex<T>(IList<(double score, T item)> items)
-        {
-            int best_index = -1;
-
-            for (int i = 0; i < items.Count; i++)
-            {
-                if (items[i].score.IsNearZero())
-                    continue;
-
-                if (best_index < 0)
-                    best_index = i;
-
-                else if (items[i].score > items[best_index].score)
-                    best_index = i;
-            }
-
-            return best_index;
         }
 
         #endregion

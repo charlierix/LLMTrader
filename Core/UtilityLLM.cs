@@ -72,7 +72,7 @@ namespace Core
 
             return retVal.ToArray();
         }
-        public static string[] ExtractBulletList(string text)
+        public static string[] ExtractBulletList(string text, int max_words_perline = 5)
         {
             var retVal = new List<(double score, string[] items)>();
 
@@ -93,11 +93,21 @@ namespace Core
 
             foreach (var section in parsed)
             {
-                if (section is ParagraphBlock paragraph)
-                    retVal.Add(ExtractBulletList_Paragraph(paragraph, 8));
+                if (section is ListBlock list)
+                    retVal.Add(ExtractBulletList_Block(section, 12, max_words_perline));
 
-                else if (section is ListBlock list)
-                    retVal.Add((12, ExtractBulletList_ListBlock(list)));
+                else
+                    retVal.Add(ExtractBulletList_Block(section, 8, max_words_perline));
+
+
+
+                //if (section is ParagraphBlock paragraph)
+                //    //retVal.Add(ExtractBulletList_Paragraph(paragraph, 8));
+                //    retVal.Add(ExtractBulletList_Block(section, 8, max_words_perline));
+
+                //else if (section is ListBlock list)
+                //    //retVal.Add((12, ExtractBulletList_ListBlock(list)));
+                //    retVal.Add(ExtractBulletList_Block(section, 12, max_words_perline));
             }
 
             // Find the best one (if there is one)
@@ -130,9 +140,9 @@ namespace Core
             }
             else if (block is LeafBlock leaf && leaf.Inline != null)
             {
-                // Add a newline for each new list item or paragraph
-                if (sb.Length > 0 && (block is ListBlock || block is ParagraphBlock))
-                    sb.AppendLine();
+                // Add a newline for each new list item or paragraph -- not necessary, the appendline was moved to inline extract function
+                //if (sb.Length > 0 && (block is ListBlock || block is ParagraphBlock))
+                //    sb.AppendLine();
 
                 ExtractOnlyText_inline(leaf.Inline, sb);
             }
@@ -146,7 +156,7 @@ namespace Core
                     string text = literalInline.Content.ToString().Trim();
                     text = StripBulletSuffix(text, literalInline);
 
-                    sb.Append(text);
+                    sb.AppendLine(text);        // the markup parser seems to eat newlines in paragraphs, instead making a list of literalinlines
                 }
                 else if (inline is ContainerInline containerInline)
                 {
@@ -184,7 +194,7 @@ namespace Core
             if (inline is ContainerInline container)
                 return GetListBullet_container(container);
 
-            if(inline.Parent != null)
+            if (inline.Parent != null)
                 return GetListBullet_container(inline.Parent);
 
             return null;
@@ -212,7 +222,7 @@ namespace Core
             if (block is ListBlock list)
                 return list.BulletType;
 
-            if(block.Parent != null)
+            if (block.Parent != null)
                 return GetListBullet_block(block.Parent);
 
             return null;
@@ -221,6 +231,60 @@ namespace Core
 
 
         #region Private Methods
+
+
+        private static (double score, string[] lines) ExtractBulletList_Block(Block block, double max_score, int max_words)
+        {
+            const int COUNT_MAX_SCORE = 7;
+            const double POW = 0.33333333;
+
+            var sb = new StringBuilder();
+
+            ExtractOnlyText_block(block, sb);
+
+            string[] split = sb.ToString().
+                Replace("\r\n", "\n").
+                Split('\n');
+
+            var lines = new List<string>();
+
+            foreach (string line in split)
+            {
+                string text = line.Trim();
+                if (text == "")
+                    continue;
+
+                // throw out lines with more than N words
+                MatchCollection matches = Regex.Matches(text, @"\w+");
+                if (matches.Count > max_words)
+                    continue;
+
+                if (matches.Count == 0)     // just special characters
+                    continue;
+
+                if (matches.Count == 1 && text.Length > 30)     // had a case where everything was on one line without spaces in between.  If that's the case, split based on capitalization (worst case, it doesn't split and there's just one element that is the original line)
+                    lines.AddRange(Regex.Split(text, @"(?<=[a-z])(?=[A-Z])"));
+
+                else
+                    lines.Add(text);
+            }
+
+            if (lines.Count == 0)
+                return (0, []);
+
+            lines = lines.
+                Distinct().
+                ToList();
+
+            // Generate a score based on the number of lines, more is better (up to COUNT_MAX_SCORE), normalized 0 to 1
+            double score = 1;
+
+            if (lines.Count < COUNT_MAX_SCORE)
+                score = Math.Pow((double)lines.Count / (double)COUNT_MAX_SCORE, POW);
+
+            return (score * max_score, lines.ToArray());
+        }
+
 
         private static (double score, string[] lines) ExtractBulletList_Paragraph(ParagraphBlock paragraph, double max_score, int max_words = 5)
         {

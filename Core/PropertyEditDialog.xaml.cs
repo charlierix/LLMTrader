@@ -115,6 +115,9 @@ namespace Core
                         Header = LorePrompts[i].Name,
                         Content = _listboxes[i],
                     });
+
+                    if(i == 0)
+                        tabcontrol.SelectedIndex = 0;
                 }
 
                 _loaded = true;

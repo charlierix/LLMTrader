@@ -67,6 +67,8 @@ namespace LLMTrader_WPF
                 {
                     LorePrompts =
                     [
+                        // This is returning more than description, almost small stories, need to get it to dial back what it returns
+                        // This model just spews out text, very little structure.  Think of ways to make it return more concise thoughts
                         new PropertyEditDialog.LorePrompt()
                         {
                             Name = "Description",

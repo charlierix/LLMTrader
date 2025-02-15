@@ -220,18 +220,6 @@ namespace Core
             }
         }
 
-        private void lstModelDetails_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            try
-            {
-                lstModelDetails.SelectedIndex = -1;
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.ToString(), Title, MessageBoxButton.OK, MessageBoxImage.Error);
-            }
-        }
-
         private void OK_Click(object sender, RoutedEventArgs e)
         {
             try

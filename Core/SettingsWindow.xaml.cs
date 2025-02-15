@@ -196,7 +196,7 @@ namespace Core
                         ParameterSize = model.Details.ParameterSize,
                         QuantizationLevel = model.Details.QuantizationLevel,
                         Family = model.Details.Family,
-                        TotalSize = SizeSuffix(model.Size),
+                        TotalSize = UtilityCore.Format_SizeSuffix(model.Size),
                     });
                 }
 
@@ -272,32 +272,6 @@ namespace Core
             {
                 MessageBox.Show(ex.ToString(), Title, MessageBoxButton.OK, MessageBoxImage.Error);
             }
-        }
-
-        #endregion
-
-        #region Private Methods
-
-        // https://stackoverflow.com/questions/14488796/does-net-provide-an-easy-way-convert-bytes-to-kb-mb-gb-etc
-        private static readonly string[] SizeSuffixes = { "bytes", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB" };
-
-        private static string SizeSuffix(long value, int decimalPlaces = 1)
-        {
-            if (value < 0)
-                return "-" + SizeSuffix(-value, decimalPlaces);
-
-            if (value == 0)
-                return "0 bytes";
-
-            int i = 0;
-            decimal dValue = (decimal)value;
-            while (Math.Round(dValue, decimalPlaces) >= 1000)
-            {
-                dValue /= 1024;
-                i++;
-            }
-
-            return string.Format("{0:n" + decimalPlaces + "} {1}", dValue, SizeSuffixes[i]);
         }
 
         #endregion
